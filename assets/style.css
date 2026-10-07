@@ -272,10 +272,10 @@ th.sortable { cursor: pointer; user-select: none; }
 th.sortable::after { content: " ↕"; opacity: .45; }
 th.sortable[aria-sort="ascending"]::after { content: " ↑"; opacity: 1; }
 th.sortable[aria-sort="descending"]::after { content: " ↓"; opacity: 1; }
-td .what { display: block; color: var(--muted); font-size: var(--fs-xs); margin-top: .15rem; max-width: 26rem; }
-td.name { min-width: 11rem; }
+td .what { display: block; color: var(--muted); font-size: var(--fs-xs); margin-top: .15rem; max-width: 22rem; }
+td.name { min-width: 10rem; }
 td.name b { font-weight: 600; }
-td.wide { min-width: 14rem; }
+td.wide { min-width: 11rem; }
 td.date { white-space: nowrap; font-family: var(--font-mono); font-size: var(--fs-xs); }
 tr.superseded td { opacity: .6; }
 tr.superseded td.name b { text-decoration: line-through; }
@@ -461,6 +461,8 @@ table.matrix th.rowh { position: sticky; left: 0; background: var(--surface); z-
   .scrim { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 55; }
   .btn.menu-btn { display: inline-flex; }
   .topbar, .page, .foot { padding-inline: 1rem; }
+  .topbar { position: static; }
+  .sec, .method, .fitem { scroll-margin-top: 1rem; }
   .method, .fitem { grid-template-columns: minmax(0, 1fr); }
   .fitem dl { grid-template-columns: minmax(0, 1fr); }
   .fitem dt { padding-top: .4rem; }

@@ -248,7 +248,8 @@
   }
   function buildIndex() {
     var idx = [];
-    function add(kind, title, text, href, extra) { idx.push({ k: kind, t: title, x: (title + " " + (text || "") + " " + (extra || "")).toLowerCase(), s: text || "", h: href }); }
+    function plain(v) { return String(v || "").replace(/\[\[[sgvft]:[^\]|]+\|([^\]]+)\]\]/g, "$1").replace(/\[\[[sgvft]:([^\]]+)\]\]/g, "$1").replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/\*\*|`/g, ""); }
+    function add(kind, title, text, href, extra) { title = plain(title); text = plain(text); idx.push({ k: kind, t: title, x: (title + " " + text + " " + plain(extra)).toLowerCase(), s: text, h: href }); }
     META.views.forEach(function (v) { add("view", v.title, v.desc, viewUrl(v.id), v.keywords); });
     META.stages.forEach(function (sm) {
       var st = PAI.stages[sm.id]; if (!st) return;
@@ -426,7 +427,7 @@
     fb += '<text class="d-elabel fb" x="640" y="38">failure mining → relabel / re-curate (13 → 04)</text>';
     fb += '<path class="d-edge fb" d="M' + (p10[0] + 20) + "," + p10[1] + " C" + (p10[0] + 20) + ",70 " + (p07[0] + NW - 20) + ",70 " + (p07[0] + NW - 20) + "," + p07[1] + '" marker-end="url(#arfb)"/>';
     fb += '<path class="d-edge fb" d="M' + (p12[0] + 30) + "," + p12[1] + " C" + (p12[0] + 30) + ",320 " + (p08[0] + NW - 10) + ",330 " + (p08[0] + NW - 10) + "," + (p08[1] + NH) + '" marker-end="url(#arfb)"/>';
-    fb += '<text class="d-elabel fb" x="' + (p08[0] + NW + 70) + '" y="318">on-robot RL / interventions (12 → 08)</text>';
+    fb += '<text class="d-elabel fb" x="' + (p08[0] + NW + 8) + '" y="353">on-robot RL / interventions (12 → 08)</text>';
     s += fb;
     META.stages.forEach(function (sm) {
       if (sm.id === "stage-14") return;
@@ -675,10 +676,27 @@
     var f = PAI.data.frontier; if (!f || !f.timeline) return;
     var ev = f.timeline.slice().sort(function (a, b) { return a.date < b.date ? -1 : 1; });
     var start = new Date("2025-04-01"), end = new Date("2026-10-31");
-    var W = 1180, padL = 30, padR = 30, axisY = 300;
+    var W = 1180, padL = 24, padR = 24, CW = 6.4, ROWH = 17;
     var span = end - start;
     function x(d) { return padL + (new Date(d) - start) / span * (W - padL - padR); }
-    var s = '<svg class="tl" viewBox="0 0 ' + W + ' 600" role="img" aria-label="Timeline of frontier events April 2025 to October 2026">';
+    /* greedy row assignment, alternating preference above / below the axis */
+    var up = [], dn = [], placed = [];
+    ev.forEach(function (e, i) {
+      var xx = x(e.date), w = e.label.length * CW + 60;
+      var anchorEnd = xx + w > W - padR;
+      var x0 = anchorEnd ? xx - w : xx, x1 = anchorEnd ? xx : xx + w;
+      function fits(rows, r) { return !(rows[r] || []).some(function (iv) { return !(x1 < iv[0] - 4 || x0 > iv[1] + 4); }); }
+      var order = i % 2 === 0 ? [up, dn] : [dn, up], chosen = null, row = 0;
+      for (row = 0; row < 30 && !chosen; row++) {
+        for (var k = 0; k < 2; k++) { if (fits(order[k], row)) { chosen = order[k]; break; } }
+        if (chosen) break;
+      }
+      (chosen[row] = chosen[row] || []).push([x0, x1]);
+      placed.push({ e: e, xx: xx, row: row, up: chosen === up, anchorEnd: anchorEnd });
+    });
+    var nUp = up.length, nDn = dn.length;
+    var axisY = 20 + nUp * ROWH + 14, H = axisY + 34 + nDn * ROWH + 10;
+    var s = '<svg class="tl" viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Timeline of frontier events April 2025 to October 2026">';
     s += '<line class="axis" x1="' + padL + '" y1="' + axisY + '" x2="' + (W - padR) + '" y2="' + axisY + '"/>';
     for (var y = 2025, m = 3; ; ) {
       var d = new Date(Date.UTC(y, m, 1)); if (d > end) break;
@@ -687,21 +705,20 @@
       if (m % 3 === 0) s += '<text x="' + xx + '" y="' + (axisY + 18) + '" text-anchor="middle">' + (y + "-" + String(m + 1).padStart(2, "0")) + "</text>";
       m++; if (m > 11) { m = 0; y++; }
     }
-    /* place labels alternating above / below in staggered rows to avoid overlap */
-    var rowsUp = [], rowsDn = [], ROWH = 15, NROWS = 16;
-    ev.forEach(function (e, i) {
-      var xx = x(e.date), up = i % 2 === 0, rows = up ? rowsUp : rowsDn;
-      var w = Math.min(e.label.length * 5.6 + 14, 260), r = 0;
-      while (r < NROWS && rows[r] !== undefined && rows[r] > xx - 4) r++;
-      if (r >= NROWS) r = NROWS - 1;
-      rows[r] = xx + w;
-      var ly = up ? axisY - 22 - r * ROWH : axisY + 34 + r * ROWH;
-      s += '<line class="stem" x1="' + xx + '" y1="' + axisY + '" x2="' + xx + '" y2="' + (up ? ly + 3 : ly - 10) + '"/>';
-      s += '<circle class="' + esc(e.kind) + '" cx="' + xx + '" cy="' + axisY + '" r="4.5"/>';
-      s += '<a href="' + (e.ref ? viewUrl("view-frontier", "f-" + e.ref) : "#") + '"><text class="ev" x="' + (xx + 3) + '" y="' + ly + '">' + esc(e.label) + "</text></a>";
+    placed.forEach(function (p) {
+      var ly = p.up ? axisY - 14 - p.row * ROWH : axisY + 36 + p.row * ROWH;
+      s += '<line class="stem" x1="' + p.xx + '" y1="' + axisY + '" x2="' + p.xx + '" y2="' + (p.up ? ly + 4 : ly - 11) + '"/>';
+    });
+    placed.forEach(function (p) {
+      var ly = p.up ? axisY - 14 - p.row * ROWH : axisY + 36 + p.row * ROWH;
+      s += '<circle class="' + esc(p.e.kind) + '" cx="' + p.xx + '" cy="' + axisY + '" r="4.5"/>';
+      var tx = p.anchorEnd ? p.xx - 3 : p.xx + 3;
+      var tw = (p.e.label.length + 10) * 6.05;
+      s += '<rect x="' + (p.anchorEnd ? tx - tw - 2 : tx - 2) + '" y="' + (ly - 11) + '" width="' + (tw + 4) + '" height="15" rx="2" style="fill:var(--surface)"/>';
+      s += '<a href="' + (p.e.ref ? viewUrl("view-frontier", "f-" + p.e.ref) : "#timeline") + '"><text class="ev" x="' + tx + '" y="' + ly + '"' + (p.anchorEnd ? ' text-anchor="end"' : "") + '>' + esc(p.e.label) + " · " + esc(p.e.date.slice(0, 7)) + "</text></a>";
     });
     s += "</svg>";
-    el.innerHTML = '<div class="diagram">' + s + '</div><div class="legend"><span><svg width="10" height="10"><circle cx="5" cy="5" r="4.5" fill="var(--frontier)"/></svg> breakthrough</span><span><svg width="10" height="10"><circle cx="5" cy="5" r="4.5" fill="var(--accent)"/></svg> important</span><span><svg width="10" height="10"><circle cx="5" cy="5" r="4.5" fill="var(--muted)"/></svg> incremental</span><span><svg width="10" height="10"><circle cx="5" cy="5" r="4.5" fill="var(--line-strong)"/></svg> infrastructure / regulation</span></div>';
+    el.innerHTML = '<div class="diagram">' + s + '</div><div class="legend"><span><svg width="10" height="10" aria-hidden="true"><circle cx="5" cy="5" r="4.5" style="fill:var(--frontier)"/></svg> breakthrough</span><span><svg width="10" height="10" aria-hidden="true"><circle cx="5" cy="5" r="4.5" style="fill:var(--accent)"/></svg> important</span><span><svg width="10" height="10" aria-hidden="true"><circle cx="5" cy="5" r="4.5" style="fill:var(--muted)"/></svg> incremental</span><span><svg width="10" height="10" aria-hidden="true"><circle cx="5" cy="5" r="4.5" style="fill:var(--line-strong)"/></svg> infrastructure / regulation</span></div>';
   };
 
   R["glossary"] = function (el) {
