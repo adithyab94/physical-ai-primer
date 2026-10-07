@@ -182,7 +182,7 @@
       c.addEventListener("click", function () { var k = c.getAttribute("data-fkey"); filters[k] = !filters[k]; applyFilters(); });
     });
     var tbtn = $("#themeBtn");
-    function label() { tbtn.textContent = theme === "system" ? "◐ System" : (theme === "dark" ? "● Dark" : "○ Light"); }
+    function label() { tbtn.textContent = "Theme: " + (theme === "system" ? "System" : (theme === "dark" ? "Dark" : "Light")); }
     label();
     tbtn.addEventListener("click", function () {
       theme = theme === "system" ? "light" : (theme === "light" ? "dark" : "system");

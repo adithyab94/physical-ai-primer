@@ -67,16 +67,16 @@ PAI.stages["stage-06"] = {
       pros: "Cheap, safe filter before real deployment.", cons: "Passing sim2sim does not guarantee sim2real." }
   ],
   extras: [
-    { title: "Where each transfer method works", note: "Qualitative synthesis of 2024–2026 results; ✓ = routinely works, ◐ = works with care / partial evidence, ✗ = rarely sufficient alone.",
+    { title: "Where each transfer method works", note: "Qualitative synthesis of 2024–2026 results; ✓ = routinely works, ~ = works with care / partial evidence, ✗ = rarely sufficient alone.",
       columns: ["Method", "Locomotion / WBC", "Rigid manipulation (vision)", "Dexterous in-hand", "Deformables", "Tight contact (insertion)"],
       rows: [
-        ["Domain randomization", "✓ standard", "◐ needs visual DR or co-training", "◐ with heavy DR + proprio/tactile", "✗", "◐ for force-controlled residuals"],
-        ["System ID / actuator nets", "✓ big gains on agility", "◐ arm dynamics rarely the bottleneck", "◐", "✗ material params hard", "◐ friction/compliance ID helps"],
-        ["Delta-action models (ASAP)", "✓ agile humanoid skills", "◐ little evidence", "◐", "✗", "◐"],
-        ["Sim-real co-training", "—", "✓ +38 % avg (2025 study)", "◐", "◐ with real-heavy mix", "◐ sim helps approach, not contact"],
-        ["GS real2sim (PolaRiS, R2R2R)", "—", "✓ eval and data for static scenes", "◐", "✗ static splats", "✗ contact physics not modelled"],
-        ["Real2sim2real twins (RialTo)", "◐", "✓ site-specific robustness", "◐", "✗", "◐"],
-        ["Residual RL", "◐", "✓ last-mile fixes", "✓", "◐", "✓ common in real-world RL (HIL-SERL, PLD)"]
+        ["Domain randomization", "✓ standard", "~ needs visual DR or co-training", "~ with heavy DR + proprio/tactile", "✗", "~ for force-controlled residuals"],
+        ["System ID / actuator nets", "✓ big gains on agility", "~ arm dynamics rarely the bottleneck", "~", "✗ material params hard", "~ friction/compliance ID helps"],
+        ["Delta-action models (ASAP)", "✓ agile humanoid skills", "~ little evidence", "~", "✗", "~"],
+        ["Sim-real co-training", "—", "✓ +38 % avg (2025 study)", "~", "~ with real-heavy mix", "~ sim helps approach, not contact"],
+        ["GS real2sim (PolaRiS, R2R2R)", "—", "✓ eval and data for static scenes", "~", "✗ static splats", "✗ contact physics not modelled"],
+        ["Real2sim2real twins (RialTo)", "~", "✓ site-specific robustness", "~", "✗", "~"],
+        ["Residual RL", "~", "✓ last-mile fixes", "✓", "~", "✓ common in real-world RL (HIL-SERL, PLD)"]
       ] }
   ],
   decision: [
